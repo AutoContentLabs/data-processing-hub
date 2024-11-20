@@ -5,7 +5,8 @@
 const {
   logger,
   helper,
-  errorCodes
+  errorCodes,
+  sendLogRequest
 } = require('@auto-content-labs/messaging');
 const fs = require('fs');
 
