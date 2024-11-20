@@ -1,0 +1,38 @@
+services:
+
+  data-processing-hub:
+    build:
+      context: ../../
+      dockerfile: .docker/production/Dockerfile
+    env_file:
+      - .env.${APP_ENV}
+    networks:
+      - network_shared
+    volumes:
+      - ./logs:/workspaces/app/logs
+      - ./files:/workspaces/app/files
+    restart: always
+    command: "npm start"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      replicas: 3
+      resources:
+        limits:
+          cpus: "0.2"
+
+      restart_policy:
+        condition: on-failure
+
+volumes:
+  logs:
+  files:
+
+
+networks:
+  network_shared:
+    # docker network create network_shared
+    external: true # Ensure this network exists or create it manually
