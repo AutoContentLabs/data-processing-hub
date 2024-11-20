@@ -2,10 +2,11 @@
  * src\events\eventDataCollectRequest.js
  */
 
-const logger = require('@auto-content-labs/messaging/src/utils/logger');
-const { } = require('@auto-content-labs/messaging');
-const { getCurrentTimestamp } = require('../helpers/timestamp');
-const errorCodes = require("../constants/errorCodes")
+const {
+  logger,
+  helper,
+  errorCodes
+} = require('@auto-content-labs/messaging');
 const fs = require('fs');
 
 /**
@@ -44,19 +45,19 @@ async function eventDataCollectResponse({ value } = processedData) {
 
       const errorMessage = errorCodes.DATA_FETCH_ERROR.message;
       await sendLogRequest({
-        logId: getCurrentTimestamp(),
+        logId: helper.getCurrentTimestamp(),
         message: `${errorMessage}: ${error.message}`,
         level: "error",
-        timestamp: getCurrentTimestamp(),
+        timestamp: helper.getCurrentTimestamp(),
       });
 
     }
 
   } else {
-    const invalidMessageError = errorCodes.INVALID_MESSAGE_FORMAT.message;
+
     await sendLogRequest({
       logId: getCurrentTimestamp(),
-      message: invalidMessageError,
+      message: errorCodes.INVALID_MESSAGE_FORMAT.message,
       level: "error",
       timestamp: getCurrentTimestamp(),
     });
