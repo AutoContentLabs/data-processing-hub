@@ -26,22 +26,32 @@ async function eventDataCollectResponse({ value } = processedData) {
     return;
   }
 
+  const { id, data, timestamp, summary } = processedData.value;
+  const { source, itemCount, dataFormat, processingTime } = summary;
+
   // Validate message format
-  if (value.id && value.data) {
+  if (id && data && timestamp && summary) {
     try {
+      // Save main data to a file
+      const dataFile = () => {
+        let fileName = `${id}.${source}.${dataFormat}`;
+        return `files/${fileName}`;
+      };
 
-      const file = () => {
-        let fileName = `${value.id}.html`
-        return `files/${fileName}`
-      }
+      await fs.writeFileSync(dataFile(), data);
+      logger.info(`Data saved: ${dataFile()}`);
 
-      await fs.writeFileSync(file, value.data);
-      logger.info(`Data saved :  ${file}`);
+      // Save source information to a separate file
+      const sourceFile = () => `files/sources.log`;
 
-      // start data processing?
+      const sourceLog = `${id}, ${source}, ${new Date(timestamp).toISOString()}\n`;
+      await fs.appendFileSync(sourceFile(), sourceLog);
+      logger.info(`Source info saved to: ${sourceFile()}`);
+
+      // Start data processing?
 
     } catch (error) {
-      logger.error(`Data saved error:  ${error}`);
+      logger.error(`Data save error: ${error}`);
 
       const errorMessage = errorCodes.DATA_FETCH_ERROR.message;
       await sendLogRequest({
@@ -54,7 +64,6 @@ async function eventDataCollectResponse({ value } = processedData) {
     }
 
   } else {
-
     await sendLogRequest({
       logId: getCurrentTimestamp(),
       message: errorCodes.INVALID_MESSAGE_FORMAT.message,
