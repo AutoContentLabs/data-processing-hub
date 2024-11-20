@@ -26,7 +26,7 @@ async function eventDataCollectResponse({ value } = processedData) {
     return;
   }
 
-  const { id, data, timestamp, summary } = processedData.value;
+  const { id, data, timestamp, summary } = value;
   const { source, itemCount, dataFormat, processingTime } = summary;
 
   // Validate message format
