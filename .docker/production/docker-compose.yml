@@ -9,8 +9,8 @@ services:
     networks:
       - network_shared
     volumes:
-      - ./logs:/workspaces/app/logs
-      - ./files:/workspaces/app/files
+      - logs:/workspaces/app/logs
+      - files:/workspaces/app/files
     restart: always
     command: "npm start"
     logging:
