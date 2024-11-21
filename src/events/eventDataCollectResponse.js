@@ -6,10 +6,10 @@ const {
   logger,
   helper,
   errorCodes,
-  sendLogRequest
+  sendLogRequest,
+  fileWriter
 } = require('@auto-content-labs/messaging');
 const path = require('path');
-const writeToFile = require('../utils/fileWriter');
 
 /**
  * Saves the serialized data to a file.
@@ -18,7 +18,7 @@ const writeToFile = require('../utils/fileWriter');
  */
 async function saveDataToFile(filePath, data) {
   try {
-    await writeToFile(filePath, data);
+    await fileWriter(filePath, data);
     logger.info(`Data saved: ${filePath}`);
   } catch (error) {
     logger.error(`Error saving data to file: ${error.message}`, { error });
@@ -34,7 +34,7 @@ async function saveDataToFile(filePath, data) {
  */
 async function saveSourceLog(filePath, logData, append = false) {
   try {
-    await writeToFile(filePath, logData, append);
+    await fileWriter(filePath, logData, append);
     logger.info(`Source info saved to: ${filePath}`);
   } catch (error) {
     logger.error(`Error saving source log: ${error.message}`, { error });
