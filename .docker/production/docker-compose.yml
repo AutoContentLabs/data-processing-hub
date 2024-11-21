@@ -1,6 +1,6 @@
 services:
 
-  data-processing-hub:
+  service:
     build:
       context: ../../
       dockerfile: .docker/production/Dockerfile
