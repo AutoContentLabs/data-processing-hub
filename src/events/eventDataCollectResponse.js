@@ -12,6 +12,37 @@ const path = require('path');
 const writeToFile = require('../utils/fileWriter');
 
 /**
+ * Saves the serialized data to a file.
+ * @param {string} filePath - Path to the file.
+ * @param {string} data - Data to be saved in the file.
+ */
+async function saveDataToFile(filePath, data) {
+  try {
+    await writeToFile(filePath, data);
+    logger.info(`Data saved: ${filePath}`);
+  } catch (error) {
+    logger.error(`Error saving data to file: ${error.message}`, { error });
+    throw error; // Re-throw the error to be handled in the main function
+  }
+}
+
+/**
+ * Saves the source log to a separate log file.
+ * @param {string} filePath - Path to the log file.
+ * @param {string} logData - Log data to be written.
+ * @param {boolean} append - Whether to append to the file or overwrite it.
+ */
+async function saveSourceLog(filePath, logData, append = false) {
+  try {
+    await writeToFile(filePath, logData, append);
+    logger.info(`Source info saved to: ${filePath}`);
+  } catch (error) {
+    logger.error(`Error saving source log: ${error.message}`, { error });
+    throw error; // Re-throw the error to be handled in the main function
+  }
+}
+
+/**
  * Handles data collection response events.
  * @param {Object} processedData - The processedData data source.
  * @param {Object} processedData.value - The incoming model data.
@@ -41,15 +72,12 @@ async function eventDataCollectResponse(processedData) {
       const dataFile = `${source}.${dataFormat}`;
 
       // Save main data to a file
-
-      await writeToFile(path.join(__dirname, '../../files', dataFile), serializedData);
-      logger.info(`Data saved: ${dataFile}`);
+      await saveDataToFile(path.join(__dirname, '../../files', dataFile), serializedData);
 
       // Save source information to a separate log file
       const sourceFile = `sources.csv`;
       const sourceLog = `${id}, ${source}\n`;
-      await writeToFile(path.join(__dirname, '../../files/logs', sourceFile), sourceLog, true);
-      logger.info(`Source info saved to: ${sourceFile}`);
+      await saveSourceLog(path.join(__dirname, '../../files/logs', sourceFile), sourceLog, true);
 
       // Additional data processing can be added here...
 
