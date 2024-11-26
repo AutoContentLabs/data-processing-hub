@@ -89,7 +89,7 @@ async function eventDataCollectResponse({ value, headers } = {}) {
         message: `${errorMessage}: ${error.message}`,
         level: "error",
         timestamp: helper.getCurrentTimestamp(),
-      });
+      }, headers.correlationId.toString());
     }
 
   } else {
@@ -99,7 +99,7 @@ async function eventDataCollectResponse({ value, headers } = {}) {
       message: errorMessage,
       level: "error",
       timestamp: helper.getCurrentTimestamp(),
-    });
+    }, headers.correlationId.toString());
   }
 }
 
