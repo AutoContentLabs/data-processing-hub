@@ -51,8 +51,7 @@ async function saveSourceLog(filePath, logData, append = false) {
  * @param {Object} processedData.value.timestamp - Timestamp of the message.
  * @param {Object} processedData.value.summary - Summary information about the data.
  */
-async function eventDataCollectResponse(processedData) {
-  const { value } = processedData;
+async function eventDataCollectResponse({ value, headers } = {}) {
 
   if (!value) {
     logger.error("No value found in the message");
@@ -79,7 +78,7 @@ async function eventDataCollectResponse(processedData) {
       const sourceLog = `${id}, ${source}\n`;
       await saveSourceLog(path.join(__dirname, '../../files/logs', sourceFile), sourceLog, true);
 
-      // Additional data processing can be added here...
+      logger.notice(`[dph] [${id}] ${headers.correlationId.toString()} source: ${source} itemCount: ${itemCount} dataFormat: ${dataFormat} processingTime: ${processingTime}`);
 
     } catch (error) {
       logger.error(`Data save error: ${error.message}`, { error });
