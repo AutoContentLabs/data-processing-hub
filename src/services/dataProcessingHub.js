@@ -24,8 +24,13 @@ async function start() {
     // The event we will listen to.
     const eventName = events.dataCollectResponse;
 
-    // Listen to incoming data collection requests
-    await listenMessage(eventName, eventDataCollectResponse);
+    // Listen to incoming data collection response with a non-blocking async callback
+    await listenMessage(eventName, (message) => {
+      // Start the eventDataCollectResponse but do not await it (non-blocking)
+      eventDataCollectResponse(message).catch((error) => {
+        logger.error("Error processing event", error);
+      });
+    });
 
     logger.info(`Listener started on event: ${eventName}`);
 
