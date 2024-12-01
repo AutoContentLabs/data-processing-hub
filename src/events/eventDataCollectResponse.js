@@ -80,7 +80,7 @@ async function eventDataCollectResponse(pair) {
     } catch (error) {
       logger.error(`[eventDataCollectResponse] Error processing data: ${error.message}`);
       // Send the data collection request   
-      const transferHeaders = { correlationId: headers.correlationId, trackId: headers.trackId } // track before request
+      const providedHeaders = { correlationId: headers.correlationId, trackId: headers.trackId } // track before request
       // await sendLogRequest({
       //   logId: helper.getCurrentTimestamp(),
       //   message: `Error processing data: ${error.message}`,
@@ -92,7 +92,7 @@ async function eventDataCollectResponse(pair) {
     const errorMessage = errorCodes.INVALID_MESSAGE_FORMAT.message;
     logger.error(errorMessage);
     // Send the data collection request   
-    const transferHeaders = { correlationId: headers.correlationId, trackId: headers.trackId } // track before request
+    const providedHeaders = { correlationId: headers.correlationId, trackId: headers.trackId } // track before request
     // await sendLogRequest({
     //   logId: helper.getCurrentTimestamp(),
     //   message: errorMessage,
