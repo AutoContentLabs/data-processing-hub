@@ -30,7 +30,7 @@ services:
           cpus: "0.5"
           memory: "1g"
       restart_policy:
-        condition: always
+        condition: on-failure
 
   service-rabbitmq:
     build:
@@ -62,7 +62,7 @@ services:
           cpus: "0.5"
           memory: "1g"
       restart_policy:
-        condition: always
+        condition: on-failure
 
   service-redis:
     build:
@@ -94,7 +94,7 @@ services:
           cpus: "0.5"
           memory: "1g"
       restart_policy:
-        condition: always
+        condition: on-failure
 
 volumes:
   logs_dph_kafka:
