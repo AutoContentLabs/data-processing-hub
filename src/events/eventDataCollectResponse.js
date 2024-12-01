@@ -1,8 +1,3 @@
-/**
- * Data processing hub
- * src\events\eventDataCollectResponse.js
- */
-
 const {
   logger,
   helper,
@@ -18,31 +13,38 @@ async function saveFile(filePath, data, append = false) {
     await fileWriter(filePath, data, append);
     logger.info(`File saved: ${filePath}`);
   } catch (error) {
-    logger.error(`File save: ${filePath} ${error} - ${error.message}`);
-    throw error; // Re-throw the error to be handled in the main function
+    logger.error(`File save error at ${filePath}: ${error.message}`);
+    // Send log request on file save error
+    // await sendLogRequest({
+    //   logId: helper.getCurrentTimestamp(),
+    //   message: `File save error: ${error.message}`,
+    //   level: "error",
+    //   timestamp: helper.getCurrentTimestamp(),
+    // });
+    throw error; // Re-throw the error to be handled by the main function
   }
 }
-
 
 /**
  * Handles data collection response events.
  * @param {Object} pair - The processedData data source.
- * @param {Object} pair.value - The incoming model data.
- * @param {Object} pair.value.id - Unique identifier for the data.
- * @param {Object} pair.value.data - The actual data (must be serialized to string).
- * @param {Object} pair.value.timestamp - Timestamp of the message.
- * @param {Object} pair.value.summary - Summary information about the data.
  */
 async function eventDataCollectResponse(pair) {
+  const { key, value, headers } = pair;
 
-  const { key, value, headers } = pair
   if (!value) {
     logger.error("No value found in the message");
+    // await sendLogRequest({
+    //   logId: helper.getCurrentTimestamp(),
+    //   message: `No value found in the message`,
+    //   level: "error",
+    //   timestamp: helper.getCurrentTimestamp(),
+    // });
     return;
   }
 
   const model = await handleDataCollectResponseRequest({ key, value, headers });
-  // Determine the service type and handle parameters accordingly
+
   const { id, service, content } = model
   const { service_id, status_type_id, service_type_id, access_type_id, data_format_id, parameters, measurements } = service;
   const { content_type, content_length, data } = content;
@@ -54,46 +56,45 @@ async function eventDataCollectResponse(pair) {
       // Serialize the data if it's an object
       const serializedData = typeof content.data === 'object' ? JSON.stringify(content.data) : content.data;
 
-      // Define the path for the data file
-      const dataFile = `${domain}.${content_type}.json`;
+      // Define the path for the data file with unique file names using the ID and timestamp
+      const dataFile = `${domain}_${content_type}_${id}_${helper.getCurrentTimestamp()}.json`;
+      const dataFilePath = nodePath.join(__dirname, '../../files', dataFile);
 
       // Save main data to a file
-      await saveFile(nodePath.join(__dirname, '../../files', dataFile), serializedData);
+      await saveFile(dataFilePath, serializedData);
 
       // Save source information to a separate log file
-      const title = data[0]?.title;
-      const trimmedTitle = title.trim();
-      const headings = data[0]?.headings[0];
-      const trimmedHeading = headings.trim();
-      const paragraphs = data[0]?.paragraphs[0];
-      const trimmedParagraph = paragraphs.trim();
-      const sourceFile = `sources.csv`;
-      const sourceLog = `"${id}","${domain}","${trimmedTitle}","${trimmedHeading},"${trimmedParagraph}"\n`;
-      await saveFile(nodePath.join(__dirname, '../../files/logs', sourceFile), sourceLog, true);
+      const title = data[0]?.title?.trim() || 'No Title';
+      const headings = data[0]?.headings[0]?.trim() || 'No Heading';
+      const paragraphs = data[0]?.paragraphs[0]?.trim() || 'No Paragraph';
 
-      logger.notice(`[dph] [${id}] ${headers.correlationId} count: ${content_length} content: ${content_type} ${metric_type}: ${metric_value} domain: ${domain} `);
+      const sourceFile = 'sources.csv';
+      const sourceLog = `"${id}","${domain}","${title}","${headings}","${paragraphs}"\n`;
+
+      // Ensure source file is appended
+      const sourceFilePath = nodePath.join(__dirname, '../../files/logs', sourceFile);
+      await saveFile(sourceFilePath, sourceLog, true);
+
+      logger.notice(`[dph] [${id}] ${headers.correlationId} count: ${content_length} content: ${content_type} domain: ${domain} `);
 
     } catch (error) {
-      logger.error(`[eventDataCollectResponse] ${error}`);
-
-      const errorMessage = errorCodes.DATA_FETCH_ERROR.message;
+      logger.error(`[eventDataCollectResponse] Error processing data: ${error.message}`);
       // await sendLogRequest({
       //   logId: helper.getCurrentTimestamp(),
-      //   message: `${errorMessage}: ${error.message}`,
+      //   message: `Error processing data: ${error.message}`,
       //   level: "error",
       //   timestamp: helper.getCurrentTimestamp(),
-      // }, headers.correlationId.toString());
+      // });
     }
-
   } else {
     const errorMessage = errorCodes.INVALID_MESSAGE_FORMAT.message;
-    console.log(errorMessage)
+    logger.error(errorMessage);
     // await sendLogRequest({
     //   logId: helper.getCurrentTimestamp(),
     //   message: errorMessage,
     //   level: "error",
     //   timestamp: helper.getCurrentTimestamp(),
-    // }, headers.correlationId.toString());
+    // });
   }
 }
 
