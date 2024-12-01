@@ -11,38 +11,18 @@ const {
   handleDataCollectResponseRequest,
   fileWriter
 } = require('@auto-content-labs/messaging');
-const path = require('path');
+const nodePath = require('path');
 
-/**
- * Saves the serialized data to a file.
- * @param {string} filePath - Path to the file.
- * @param {string} data - Data to be saved in the file.
- */
-async function saveDataToFile(filePath, data) {
+async function saveFile(filePath, data, append = false) {
   try {
-    await fileWriter(filePath, data);
-    logger.info(`Data saved: ${filePath}`);
+    await fileWriter(filePath, data, append);
+    logger.info(`File saved: ${filePath}`);
   } catch (error) {
-    logger.error(`Error saving data to file: ${error.message}`, { error });
+    logger.error(`File save: ${filePath} ${error} - ${error.message}`);
     throw error; // Re-throw the error to be handled in the main function
   }
 }
 
-/**
- * Saves the source log to a separate log file.
- * @param {string} filePath - Path to the log file.
- * @param {string} logData - Log data to be written.
- * @param {boolean} append - Whether to append to the file or overwrite it.
- */
-async function saveSourceLog(filePath, logData, append = false) {
-  try {
-    await fileWriter(filePath, logData, append);
-    logger.info(`Source info saved to: ${filePath}`);
-  } catch (error) {
-    logger.error(`Error saving source log: ${error.message}`, { error });
-    throw error; // Re-throw the error to be handled in the main function
-  }
-}
 
 /**
  * Handles data collection response events.
@@ -75,38 +55,45 @@ async function eventDataCollectResponse(pair) {
       const serializedData = typeof content.data === 'object' ? JSON.stringify(content.data) : content.data;
 
       // Define the path for the data file
-      const dataFile = `${domain}.${content_type}`;
+      const dataFile = `${domain}.${content_type}.json`;
 
       // Save main data to a file
-      await saveDataToFile(path.join(__dirname, '../../files', dataFile), serializedData);
+      await saveFile(nodePath.join(__dirname, '../../files', dataFile), serializedData);
 
       // Save source information to a separate log file
+      const title = data[0]?.title;
+      const trimmedTitle = title.trim();
+      const headings = data[0]?.headings[0];
+      const trimmedHeading = headings.trim();
+      const paragraphs = data[0]?.paragraphs[0];
+      const trimmedParagraph = paragraphs.trim();
       const sourceFile = `sources.csv`;
-      const sourceLog = `${id}, ${domain}\n`;
-      await saveSourceLog(path.join(__dirname, '../../files/logs', sourceFile), sourceLog, true);
+      const sourceLog = `"${id}","${domain}","${trimmedTitle}","${trimmedHeading},"${trimmedParagraph}"\n`;
+      await saveFile(nodePath.join(__dirname, '../../files/logs', sourceFile), sourceLog, true);
 
-      logger.notice(`[dph] [${id}] ${headers.correlationId} domain: ${domain} content_length: ${content_length} content_type: ${content_type} ${metric_type}: ${metric_value}`);
+      logger.notice(`[dph] [${id}] ${headers.correlationId} count: ${content_length} content: ${content_type} ${metric_type}: ${metric_value} domain: ${domain} `);
 
     } catch (error) {
-      logger.error(`Data save error: ${error.message}`, { error });
+      logger.error(`[eventDataCollectResponse] ${error}`);
 
       const errorMessage = errorCodes.DATA_FETCH_ERROR.message;
-      await sendLogRequest({
-        logId: helper.getCurrentTimestamp(),
-        message: `${errorMessage}: ${error.message}`,
-        level: "error",
-        timestamp: helper.getCurrentTimestamp(),
-      }, headers.correlationId.toString());
+      // await sendLogRequest({
+      //   logId: helper.getCurrentTimestamp(),
+      //   message: `${errorMessage}: ${error.message}`,
+      //   level: "error",
+      //   timestamp: helper.getCurrentTimestamp(),
+      // }, headers.correlationId.toString());
     }
 
   } else {
     const errorMessage = errorCodes.INVALID_MESSAGE_FORMAT.message;
-    await sendLogRequest({
-      logId: helper.getCurrentTimestamp(),
-      message: errorMessage,
-      level: "error",
-      timestamp: helper.getCurrentTimestamp(),
-    }, headers.correlationId.toString());
+    console.log(errorMessage)
+    // await sendLogRequest({
+    //   logId: helper.getCurrentTimestamp(),
+    //   message: errorMessage,
+    //   level: "error",
+    //   timestamp: helper.getCurrentTimestamp(),
+    // }, headers.correlationId.toString());
   }
 }
 
