@@ -96,7 +96,7 @@ async function eventDataCollectResponse(pair) {
           : content.data;
 
       // Define the path for the data file with unique file names using the ID and timestamp
-      const dataFile = `${domain}_${content_type}_${id}.json`;
+      const dataFile = `${id}.${domain}.json`;
       const dataFilePath = nodePath.join(
         __dirname,
         "../../files/sites",
