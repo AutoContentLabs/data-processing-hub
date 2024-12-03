@@ -1,14 +1,16 @@
 /**
  * @file src/services/dataProcessingHub.js
- * @description Data Processing Hub 
+ * @description Data Processing Hub
  */
 
 const {
   logger,
   events,
-  listenMessage
-} = require('@auto-content-labs/messaging');
-const { eventDataCollectResponse } = require("../events/eventDataCollectResponse");
+  listenMessage,
+} = require("@auto-content-labs/messaging");
+const {
+  eventDataCollectResponse,
+} = require("../events/eventDataCollectResponse");
 
 global.tasksProcessed = 0;
 global.startTime = null;
@@ -36,15 +38,14 @@ async function start() {
     await listenMessage(eventName, eventDataCollectResponse);
 
     logger.info(`Listener started on event: ${eventName}`);
-
   } catch (error) {
     logger.error(`Application failed to start:${eventName}`, error);
   }
 }
 
 /**
-* Graceful shutdown handler for the application.
-*/
+ * Graceful shutdown handler for the application.
+ */
 function handleShutdown() {
   logger.info("Application shutting down...");
   process.exit(0);
