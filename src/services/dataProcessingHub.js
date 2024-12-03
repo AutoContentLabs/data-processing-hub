@@ -3,11 +3,13 @@
  * @description Data Processing Hub
  */
 
+const { logger } = require('@auto-content-labs/messaging-utils');
+
 const {
-  logger,
   events,
   listenMessage,
 } = require("@auto-content-labs/messaging");
+
 const {
   eventDataCollectResponse,
 } = require("../events/eventDataCollectResponse");

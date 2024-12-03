@@ -1,11 +1,11 @@
+const { logger, fileWriter } = require('@auto-content-labs/messaging-utils');
+
 const {
-  logger,
-  helper,
   errorCodes,
   sendLogRequest,
   handleDataCollectResponseRequest,
-  fileWriter,
 } = require("@auto-content-labs/messaging");
+
 const nodePath = require("path");
 
 async function saveFile(filePath, data, append = false) {
